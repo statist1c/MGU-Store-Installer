@@ -4,11 +4,11 @@ Android companion and first-install client for [robertnisipeanu/mgu-store](https
 
 New in v0.2.0: the selected MGU STORE / BMW icon and GitHub app updater. In Settings → App updates, use **Check now** or leave daily automatic checks enabled. Downloads and installation require your choice. See [update behavior, permissions and signing requirements](APP-UPDATES.md).
 
-<img src="docs/icon.png" width="128" alt="MGU Store Installer icon">
+<img src="docs/icon-v0.2.0.png" width="128" alt="MGU Store Installer icon">
 
 **Preview release:** real-vehicle validation is pending. Existing root SSH access is required.
 
-<img src="docs/light.png" width="260" alt="Light appearance"> <img src="docs/dark.png" width="260" alt="Dark appearance">
+<img src="docs/setup-v0.2.0.png" width="260" alt="Light appearance"> <img src="docs/updates.png" width="260" alt="App update settings in v0.2.0">
 
 The native card layout, colors, rounded buttons, light/dark/system appearance and bottom navigation follow the locally recovered **MGU iDrive7-8 Root Companion** project. The launcher icon uses the selected MGU STORE / BMW motorsport design with a 7/8 label and installation arrow. Application ID: `dev.mgu.store.installer`; it installs alongside Root Companion.
 
