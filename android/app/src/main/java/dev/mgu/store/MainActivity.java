@@ -18,7 +18,7 @@ import java.util.concurrent.*;
 
 public final class MainActivity extends Activity {
     int BG,CARD,INK,MUTED,BLUE,PALE,LINE,ON,AMBER;
-    boolean dark; int selected;
+    boolean dark; int selected; boolean updateBusy; TextView updateStatus;
     LinearLayout shell,body,nav;FrameLayout host;
     TextView status,log,verify,keyLabel,storeStatus;
     EditText address,port,pass,phoneLink;
@@ -29,7 +29,7 @@ public final class MainActivity extends Activity {
     final ExecutorService worker=Executors.newSingleThreadExecutor();
     PhoneApi.Access access;JSONObject state;boolean apiBusy;String phoneError="";
     String lastLog="";String initialTheme;
-    final Runnable refresh=new Runnable(){public void run(){status.setText(InstallService.status);if(log!=null&&!lastLog.equals(InstallService.log())){lastLog=InstallService.log();log.setText(lastLog.isEmpty()?"No operations yet.":lastLog);}if(verify!=null){verify.setText(InstallService.pendingFingerprint.isEmpty()?"SSH host identities are verified before authentication.":InstallService.pendingHost+"\n"+InstallService.pendingFingerprint); }handler.postDelayed(this,1000);}};
+    final Runnable refresh=new Runnable(){public void run(){status.setText(InstallService.status);if(updateStatus!=null)updateStatus.setText(AppUpdater.prefs(MainActivity.this).getString("status","Check GitHub releases for updates."));if(log!=null&&!lastLog.equals(InstallService.log())){lastLog=InstallService.log();log.setText(lastLog.isEmpty()?"No operations yet.":lastLog);}if(verify!=null){verify.setText(InstallService.pendingFingerprint.isEmpty()?"SSH host identities are verified before authentication.":InstallService.pendingHost+"\n"+InstallService.pendingFingerprint); }handler.postDelayed(this,1000);}};
     SharedPreferences prefs(){return getSharedPreferences("settings",0);}
     @Override public void onCreate(Bundle saved){
         initialTheme=prefs().getString("theme","System");dark=initialTheme.equals("Dark")||(initialTheme.equals("System")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES);
@@ -41,7 +41,7 @@ public final class MainActivity extends Activity {
         shell=new LinearLayout(this);shell.setOrientation(LinearLayout.VERTICAL);shell.setBackgroundColor(BG);setContentView(shell);
         shell.setOnApplyWindowInsetsListener((v,insets)->{if(Build.VERSION.SDK_INT>=30){Insets b=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());shell.setPadding(b.left,b.top,b.right,b.bottom);}else shell.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});
         LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);header.setPadding(dp(16),dp(12),dp(16),dp(10));
-        ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.ic_mgu_foreground);header.addView(logo,new LinearLayout.LayoutParams(dp(46),dp(46)));
+        ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.ic_mgu_store_next);header.addView(logo,new LinearLayout.LayoutParams(dp(46),dp(46)));
         TextView name=text("MGU Store Installer",21,INK);name.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));LinearLayout.LayoutParams title=new LinearLayout.LayoutParams(0,-2,1);title.leftMargin=dp(10);header.addView(name,title);shell.addView(header);
         status=text(InstallService.status,12,MUTED);status.setPadding(dp(14),dp(10),dp(14),dp(10));status.setBackground(shape(CARD,14));LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,-2);sp.setMargins(dp(16),0,dp(16),dp(6));shell.addView(status,sp);
         host=new FrameLayout(this);shell.addView(host,new LinearLayout.LayoutParams(-1,0,1));
@@ -52,7 +52,7 @@ public final class MainActivity extends Activity {
             FrameLayout pill=new FrameLayout(this);NavIcon icon=new NavIcon(this,i);icon.color=MUTED;pill.addView(icon,new FrameLayout.LayoutParams(dp(24),dp(24),Gravity.CENTER));item.addView(pill,new LinearLayout.LayoutParams(dp(64),dp(32)));navPills[i]=pill;navIcons[i]=icon;
             TextView t=text(labels[i],12,MUTED);t.setGravity(Gravity.CENTER);t.setPadding(0,dp(4),0,0);item.addView(t);navText[i]=t;nav.addView(item,new LinearLayout.LayoutParams(0,dp(64),1));}
 
-        shell.addView(nav);select(saved==null?0:saved.getInt("tab",0));shell.requestApplyInsets();shell.setFocusableInTouchMode(true);shell.requestFocus();
+        shell.addView(nav);select(getIntent().getBooleanExtra("show_app_updates",false)?3:saved==null?0:saved.getInt("tab",0));shell.requestApplyInsets();shell.setFocusableInTouchMode(true);shell.requestFocus();
         if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},8);
     }
     int dp(float n){return Math.round(n*getResources().getDisplayMetrics().density);}
@@ -102,13 +102,14 @@ public final class MainActivity extends Activity {
     interface ValueAction{void run(String value)throws Exception;}
     void editDialog(String title,String hint,boolean secret,ValueAction action){EditText e=new EditText(this);e.setSingleLine(true);e.setHint(hint);e.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);if(secret)e.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);new AlertDialog.Builder(this).setTitle(title).setView(e).setPositiveButton("Continue",(d,n)->{try{action.run(e.getText().toString().trim());}catch(Exception ex){message(ex.getMessage());}e.setText("");}).setNegativeButton("Cancel",null).show();}
     void settings(){LinearLayout p=page(3,"Settings","Appearance and connection requirements.");card(p,"Appearance");String[] modes={"System","Light","Dark"};int n=0;for(int i=0;i<modes.length;i++)if(modes[i].equals(initialTheme))n=i;Spinner theme=spinner(modes,n);theme.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> a){}public void onItemSelected(android.widget.AdapterView<?> a,View v,int p,long id){if(!modes[p].equals(initialTheme)){saveConnection();prefs().edit().putString("theme",modes[p]).apply();recreate();}}});
+        AppUpdateUi.attach(this,p);
         card(p,"Requirements");label("Android 8.0 or newer, ARM64 or x86-64. Existing root SSH access and root’s private key. A reachable private IPv4 head-unit address. Internet on the phone to download public GitHub releases. Valid HU_MGU coding and stable vehicle power.");label("This app does not root, flash firmware, restore coding or bypass SSH authentication. Root Companion creates SSH access; this app installs the Store using that access.");
         card(p,"Privacy & trust");label("The SSH key is stored in private app storage and excluded from Android backup. Passphrases and Phone access tokens stay in memory. Phone access uses the upstream local HTTP protocol: use only a trusted car hotspot, and turn it off when finished.");button("Delete imported SSH key",false,()->{if(InstallService.busy){message("Wait for the current operation.");return;}confirm("Delete SSH key?","Keep a private backup before deleting this phone’s copy.",()->{new File(getFilesDir(),"root-key").delete();keyLabel.setText("No SSH key imported.");});});button("Forget saved host fingerprints",false,()->{if(InstallService.busy){message("Wait for the current operation.");return;}confirm("Forget trusted hosts?","You will need to verify each fingerprint again.",()->getSharedPreferences("pins",0).edit().clear().apply());});
-        card(p,"About this preview");label("MGU Store Installer · 0.1.0\nBased on robertnisipeanu/mgu-store\nGPL-3.0 · independent companion; no BMW affiliation.\nAndroid installer port is not yet validated on a real vehicle.");button("Open upstream project",false,()->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://github.com/robertnisipeanu/mgu-store"))));}
+        card(p,"About this preview");label("MGU Store Installer · 0.2.0\nBased on robertnisipeanu/mgu-store\nGPL-3.0 · independent companion; no BMW affiliation.\nAndroid installer port is not yet validated on a real vehicle.");button("Open upstream project",false,()->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://github.com/robertnisipeanu/mgu-store"))));}
     void confirm(String title,String detail,Runnable run){new AlertDialog.Builder(this).setTitle(title).setMessage(detail).setNegativeButton("Cancel",null).setPositiveButton("Continue",(d,w)->run.run()).show();}
     void message(String s){new AlertDialog.Builder(this).setTitle("MGU Store Installer").setMessage(s).setPositiveButton("OK",null).show();}
     @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(result!=RESULT_OK||data==null)return;try{if(request==10){if(InstallService.busy)throw new IOException("Wait for the current operation.");ByteArrayOutputStream bytes=new ByteArrayOutputStream();try(InputStream in=getContentResolver().openInputStream(data.getData())){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){if(bytes.size()+n>65536)throw new IOException("Key file too large. Select the private key, not a ZIP backup.");bytes.write(b,0,n);}}String key=bytes.toString("UTF-8");if(!key.contains("PRIVATE KEY-----"))throw new IOException("Select an OpenSSH or PEM private key file.");try(FileOutputStream out=openFileOutput("root-key",MODE_PRIVATE)){out.write(bytes.toByteArray());}keyLabel.setText("Private SSH key imported.");}else if(request==11){try(OutputStream out=getContentResolver().openOutputStream(data.getData())){out.write(InstallService.log().getBytes(java.nio.charset.StandardCharsets.UTF_8));}message("Session log exported.");}}catch(Exception e){message(e.getMessage());}}
     @Override protected void onSaveInstanceState(Bundle b){super.onSaveInstanceState(b);b.putInt("tab",selected);saveConnection();}
-    @Override protected void onResume(){super.onResume();handler.post(refresh);}
+    @Override protected void onResume(){super.onResume();handler.post(refresh);AppUpdater.schedule(this);if(AppUpdater.prefs(this).getBoolean("automatic",true)&&System.currentTimeMillis()-AppUpdater.prefs(this).getLong("last_check",0)>24*60*60*1000L)AppUpdateUi.check(this,false);}
     @Override protected void onPause(){super.onPause();handler.removeCallbacks(refresh);saveConnection();}
 }

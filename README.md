@@ -1,6 +1,8 @@
 # MGU Store Installer
 
-Android companion and first-install client for [robertnisipeanu/mgu-store](https://github.com/robertnisipeanu/mgu-store). Version **0.1.0-preview**, 14 November 2026.
+Android companion and first-install client for [robertnisipeanu/mgu-store](https://github.com/robertnisipeanu/mgu-store). Version **0.2.0**, 15 November 2026.
+
+New in v0.2.0: the selected MGU STORE / BMW icon and GitHub app updater. In Settings → App updates, use **Check now** or leave daily automatic checks enabled. Downloads and installation require your choice. See [update behavior, permissions and signing requirements](APP-UPDATES.md).
 
 <img src="docs/icon.png" width="128" alt="MGU Store Installer icon">
 
@@ -8,10 +10,13 @@ Android companion and first-install client for [robertnisipeanu/mgu-store](https
 
 <img src="docs/light.png" width="260" alt="Light appearance"> <img src="docs/dark.png" width="260" alt="Dark appearance">
 
-The native card layout, colors, rounded buttons, light/dark/system appearance and bottom navigation follow the locally recovered **MGU iDrive7-8 Root Companion** project. The launcher icon is an original MGU 7/8 head-unit display with an installation arrow. Application ID: `dev.mgu.store.installer`; it installs alongside Root Companion.
+The native card layout, colors, rounded buttons, light/dark/system appearance and bottom navigation follow the locally recovered **MGU iDrive7-8 Root Companion** project. The launcher icon uses the selected MGU STORE / BMW motorsport design with a 7/8 label and installation arrow. Application ID: `dev.mgu.store.installer`; it installs alongside Root Companion.
+
+Download the official APK from [GitHub Releases](https://github.com/statist1c/MGU-Store-Installer/releases/latest). Release APKs use the same local debug certificate as the v0.1.0 APK supplied with this project; independently generated Actions APKs may use different certificates. Preserve your private key backups and use the release channel consistently.
 
 ## What works
 
+- Check GitHub releases manually or daily, receive update notifications and download verified APKs for user-confirmed Android installation.
 - Import an OpenSSH/PEM root private key through Android's document picker; enter an encrypted key's passphrase for each operation.
 - Reach the head unit over a selected Wi-Fi or Ethernet network, or Android's automatic route. SSH uses public-key authentication as `root` and a configurable port.
 - Verify and pin the head unit's SHA-256 SSH host fingerprint before authenticating. Changed host keys are refused until explicitly verified again.
