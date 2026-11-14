@@ -1,0 +1,18 @@
+plugins { id 'com.android.application'; id 'com.chaquo.python' }
+android {
+    namespace 'dev.mgu.store'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'dev.mgu.store.installer'
+        minSdk 26; targetSdk 35; versionCode 1; versionName '0.1.0-preview'
+        testInstrumentationRunner 'dev.mgu.store.SmokeTest'
+        ndk { abiFilters 'arm64-v8a', 'x86_64' }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+    packaging { resources { excludes += ['META-INF/versions/**', 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA'] } }
+}
+chaquopy { defaultConfig { version = '3.13'; if (project.hasProperty('buildPythonPath')) { buildPython(project.property('buildPythonPath').toString()) } } }
+dependencies {
+    implementation 'com.github.mwiede:jsch:2.28.8'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.87'
+}
