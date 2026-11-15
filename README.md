@@ -1,3 +1,7 @@
+# ⚠️ WARNING: THIS APP IS UNTESTED ON A REAL BMW HEAD UNIT
+
+**EXPERIMENTAL PRE-RELEASE — USE AT YOUR OWN RISK. EMULATOR CHECKS DO NOT CONFIRM REAL-VEHICLE OPERATION.**
+
 # MGU Store Installer
 
 Android companion and first-install client for [robertnisipeanu/mgu-store](https://github.com/robertnisipeanu/mgu-store). Version **0.2.1**, 15 November 2026.
