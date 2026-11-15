@@ -36,18 +36,25 @@ public final class InstallService extends Service {
                 if(!Python.isStarted())Python.start(new AndroidPlatform(this));
                 PyObject backend=Python.getInstance().getModule("installer");
                 if("install".equals(action)){
-                    backend.callAttr("install",new File(getCacheDir(),"kit").getPath(),ssh,this,intent.getBooleanExtra("renderer",true),intent.getBooleanExtra("uplink",true));
-                    status="Install command completed · review the log";
+                    JSONObject result=new JSONObject(backend.callAttr("install",new File(getCacheDir(),"kit").getPath(),ssh,this,intent.getBooleanExtra("renderer",true),intent.getBooleanExtra("uplink",true)).toString());
+                    status=summary(result);onLine(result.toString());
                 }else if("restart".equals(action)){
                     backend.callAttr("restart",ssh);status="Restart requested · reconnect after boot";
                 }else{
-                    JSONObject reply=new JSONObject(ssh.run("sh /var/opt/mgu-deploy/mgu-deploy.sh status", "",180));
-                    if(reply.getInt("rc")!=0)throw new IOException("Deploy status failed. The Store may not be installed; inspect the log.");
-                    status="SSH authenticated · status received";
+                    JSONObject result=new JSONObject(backend.callAttr("read_status",ssh).toString());
+                    status=summary(result);onLine(result.optString("detail"));onLine(result.toString());
                 }
             }catch(Exception e){onLine("ERROR: "+e.getMessage());status=pendingFingerprint.isEmpty()?"Operation failed · see Monitor":"SSH identity requires verification · see Setup";}
             finally{busy=false;if(lock.isHeld())lock.release();stopForeground(STOP_FOREGROUND_REMOVE);stopSelf(startId);}
         });
         return START_NOT_STICKY;
+    }
+    private static String summary(JSONObject result){
+        switch(result.optString("state")){
+            case "ready":return "Deploy reports ready · check the Store screen";
+            case "restart-required":return "Head-unit restart needed · see Setup";
+            case "blocked":return "Store setup blocked · see Monitor";
+            default:return "Setup state unverified · read Monitor before retrying";
+        }
     }
 }

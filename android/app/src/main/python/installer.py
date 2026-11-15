@@ -17,13 +17,15 @@ REPO = 'https://api.github.com/repos/robertnisipeanu/mgu-store'
 HERE = Path(__file__).parent
 COMMANDS = json.loads((HERE / 'upstream_commands.json').read_text())
 ID = re.compile(r'[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}\Z')
+CATALOG_ID = re.compile(r'[a-z0-9][a-z0-9_-]{0,63}\Z')
+VERSION = re.compile(r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\Z')
 NAME = re.compile(r'[a-zA-Z0-9][a-zA-Z0-9._@+-]{0,220}\.tgz\Z')
 MAX_ARTIFACT = 160 * 1024 * 1024
 
 def download(url, maximum, dest=None, accept='application/octet-stream'):
     if not url.startswith('https://'):
         raise ValueError('Package downloads require HTTPS')
-    req = urllib.request.Request(url, headers={'Accept': accept, 'User-Agent': 'MGU-Store-Installer/0.1'})
+    req = urllib.request.Request(url, headers={'Accept': accept, 'User-Agent': 'MGU-Store-Installer/0.2.1'})
     with urllib.request.urlopen(req, timeout=45) as response:
         if not response.url.startswith('https://'):
             raise ValueError('Refused insecure redirect')
@@ -48,10 +50,13 @@ def validate_catalog(catalog, renderer=True, uplink=True):
     chosen, seen = [], set()
     for entry in catalog['components']:
         cid = entry.get('id', '')
-        if not ID.fullmatch(cid) or cid in seen:
+        if not CATALOG_ID.fullmatch(cid) or cid in seen:
             raise ValueError('Invalid or duplicate component ID')
         seen.add(cid)
         a = entry.get('artifact', {})
+        version = entry.get('version', '')
+        if not isinstance(version, str) or not VERSION.fullmatch(version) or a.get('name') != cid + '@' + version + '.tgz':
+            raise ValueError('Catalog artifact name must match its component ID and version')
         if not NAME.fullmatch(a.get('name', '')) or not re.fullmatch(r'[a-fA-F0-9]{64}', a.get('sha256', '')):
             raise ValueError('Catalog lacks safe filename or SHA-256')
         if type(a.get('size')) is not int or not 0 < a['size'] <= MAX_ARTIFACT:
@@ -119,6 +124,62 @@ def execute(ssh, command, path='', timeout=120):
         raise RuntimeError('Remote command failed (%s): %s' % (reply['rc'], reply['err'][-2500:]))
     return reply['out']
 
+
+def tiles_show(state):
+    """Port of upstream mgu-install.js tilesShow for ID7 and ID8 status."""
+    fb = state.get('fallback')
+    if fb and state.get('unit', {}).get('hmi') == 'ID8' and 'listed_by_manager' in fb:
+        apps = [c for c in state.get('components', []) if c.get('kind') == 'app']
+        ours = ['robertn_store'] + fb.get('apps', [])
+        shown = all((i > 0 and not any(c.get('id') == cid for c in apps)) or
+                    any(c.get('id') == cid and c.get('tile_visible') is True for c in apps)
+                    for i, cid in enumerate(ours))
+        reason = state.get('live_installs', {}).get('reason', '')
+        why = reason[5:] if not shown and not fb.get('active') and reason.startswith('off: ') else None
+        return dict(shown=shown, why=why)
+    if (not fb or 'manager_runs_copy' not in fb or state.get('unit', {}).get('hmi') == 'ID8'
+            or not fb.get('apps') or state.get('retired_leftovers')):
+        return dict(shown=True, why=None)
+    if fb.get('manager_runs_copy') is True:
+        return dict(shown=True, why=None)
+    return dict(shown=False, why=fb.get('refused') or None)
+
+
+def assess_status(lines, services):
+    """Never turn missing/malformed status into a verified-ready result."""
+    parts = lines.splitlines()
+    if len(parts) != len(services) + 1:
+        return dict(state='unknown', detail='Deploy status was incomplete. Review the log and read status again.')
+    try:
+        state = json.loads(parts[-1])
+        if not isinstance(state, dict) or not isinstance(state.get('unit'), dict) or not isinstance(state.get('components'), list):
+            raise ValueError('Status must be an object')
+        if not any(isinstance(c, dict) and c.get('id') == 'robertn_store' and c.get('kind') == 'app'
+                   for c in state['components']):
+            return dict(state='unknown', detail='The deploy report does not list MGU Store. Review the log before installing or restarting.')
+        tiles = tiles_show(state)
+    except (ValueError, TypeError, AttributeError):
+        return dict(state='unknown', detail='Deploy status could not be interpreted. Review the log before restarting.')
+    running = all(value in ('active', 'absent') for value in parts[:-1])
+    service_state = dict(zip(services, parts[:-1]))
+    if tiles['why']:
+        return dict(state='blocked', detail='Store tile cannot show: ' + str(tiles['why']), services=service_state)
+    if running and tiles['shown']:
+        return dict(state='ready', detail='Deploy reports services ready and Store tiles available.', services=service_state)
+    return dict(state='restart-required', detail='Deploy reports setup pending. Restart the head unit to finish, then read status again.', services=service_state)
+
+
+def status(ssh, optional_ids=('mgu-render', 'mgu-uplink')):
+    services = [('mgu-updater', 'mgu-updater.service')]
+    services += [(cid, cid + ('.socket' if cid == 'mgu-render' else '.service'))
+                 for cid in optional_ids if cid in ('mgu-render', 'mgu-uplink')]
+    deploy = 'sh /var/opt/mgu-deploy/mgu-deploy.sh'
+    commands = [deploy + ' status >&2']
+    commands += ['if [ -e /var/opt/' + cid + '/current ]; then systemctl is-active ' + unit +
+                 ' 2>/dev/null || true; else echo absent; fi' for cid, unit in services]
+    commands += [deploy + ' status --json 2>/dev/null | tail -n 1']
+    return assess_status(execute(ssh, '; '.join(commands), timeout=180), [cid for cid, _ in services])
+
 def install(root, ssh, callback, renderer=True, uplink=True):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
@@ -157,20 +218,33 @@ def install(root, ssh, callback, renderer=True, uplink=True):
                 archive.add(root / name, arcname=folder + '/' + name, recursive=False)
             add_bytes(archive, 'run.sh', COMMANDS['run'].encode(), 0o755)
             add_bytes(archive, 'sources.json', (HERE / 'sources.json').read_bytes())
-        stage = '/var/opt/mgu-deploy-kit-android-' + str(time.time_ns())
+        # The upstream deploy tool only cleans abandoned mgu-deploy-kit-<digits> directories.
+        stage = '/var/opt/mgu-deploy-kit-' + str(time.time_ns())
         say('Uploading verified kit. Keep the phone connected and vehicle on stable power.')
         # Only the generated staging directory is removed. No supplied values enter shell text.
         command = ('umask 022 && mkdir -m 700 ' + stage + ' && tar -xzf - -C ' + stage +
                    ' && { sh ' + stage + '/run.sh; st=$?; rm -rf ' + stage + '; exit $st; }')
         execute(ssh, command, str(kit), 3600)
         say('Install command completed. Reading deploy status…')
-        result = execute(ssh, 'sh /var/opt/mgu-deploy/mgu-deploy.sh status', timeout=180)
-        say(result)
-        say('Installation finished. Check the Store tile; restart the head unit from the Store if required. Hardware result is not independently verified by this app.')
-        return result
+        withs = [e['id'] for e in chosen if e['id'] in ('mgu-render', 'mgu-uplink')]
+        result = status(ssh, withs)
+        say(result['detail'])
+        say('This is the deploy tool’s report; confirm the result on the head-unit screen.')
+        return json.dumps(result)
     finally:
         for path in files:
             path.unlink(missing_ok=True)
 
 def restart(ssh):
-    return execute(ssh, COMMANDS['restart'])
+    reply = json.loads(str(ssh.run(COMMANDS['restart'], '', 120)))
+    if reply['rc'] == 3:
+        raise RuntimeError('An install is running on the head unit. Restart only after it finishes.')
+    refused = re.search(r'\[Error\.\s*([^\]]*)\]', reply.get('out', '') + '\n' + reply.get('err', ''))
+    if reply['rc'] != 0 or refused:
+        reason = refused.group(1).strip() if refused else reply.get('err', '').strip() or 'SSH status ' + str(reply['rc'])
+        raise RuntimeError('The head unit did not accept the restart: ' + reason)
+    return reply['out']
+
+
+def read_status(ssh):
+    return json.dumps(status(ssh))

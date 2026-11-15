@@ -1,8 +1,10 @@
 # MGU Store Installer
 
-Android companion and first-install client for [robertnisipeanu/mgu-store](https://github.com/robertnisipeanu/mgu-store). Version **0.2.0**, 15 November 2026.
+Android companion and first-install client for [robertnisipeanu/mgu-store](https://github.com/robertnisipeanu/mgu-store). Version **0.2.1**, 15 November 2026.
 
-New in v0.2.0: the selected MGU STORE / BMW icon and GitHub app updater. In Settings → App updates, use **Check now** or leave daily automatic checks enabled. Downloads and installation require your choice. See [update behavior, permissions and signing requirements](APP-UPDATES.md).
+New in v0.2.1: upstream-compatible staging cleanup, restart-refusal handling and post-install service/tile readiness checks. See [release notes](RELEASE-NOTES-v0.2.1.md).
+
+Added in v0.2.0: the selected MGU STORE / BMW icon and GitHub app updater. In Settings → App updates, use **Check now** or leave daily automatic checks enabled. Downloads and installation require your choice. See [update behavior, permissions and signing requirements](APP-UPDATES.md).
 
 <img src="docs/icon-v0.2.0.png" width="128" alt="MGU Store Installer icon">
 
@@ -92,7 +94,7 @@ The non-vehicle integration check `python tools/verify_published_release.py` dow
 
 Source reference: upstream commit **fc5750a8474359ad20c1c01cf29d997ff7f2d621**. `vendor/mgu-install.js` is retained for audit. `upstream_commands.json` contains its verbatim `RUN_SH`, `CODING_CHECK` and `RESTART` constants; `sources.json` comes from upstream. Android orchestration is in `installer.py`; SSH and UI are native Java.
 
-Differences from the computer installer: public catalog releases only, every artifact must have a SHA-256 (no legacy release-list fallback), explicit IPv4 host/network selection, and a coding check must positively return `ok`. Missing or unrecognized coding checks stop installation. No private release download, USB repository creation/import, token bootstrapping during installation, automatic tile-readiness verdict or automatic restart. Status output is shown for review; command success alone does not prove a working Store tile.
+Differences from the computer installer: public catalog releases only, every artifact must have a SHA-256 (no legacy release-list fallback), explicit IPv4 host/network selection, and a coding check must positively return `ok`. Missing or unrecognized coding checks stop installation. No private release download, USB repository creation/import, token bootstrapping during installation or automatic restart. The app interprets the deploy tool’s service/tile status and flags missing or malformed status as unverified; confirm the result on the head-unit screen.
 
 ## License and provenance
 
@@ -102,4 +104,4 @@ GPL-3.0-or-later, following upstream. See `LICENSE` and `THIRD_PARTY_NOTICES.md`
 
 The application is GPL-3.0-or-later. Preserve the [full license](LICENSE), [upstream attribution](COPYRIGHT.md) and [third-party notices](THIRD_PARTY_NOTICES.md). Complete component license texts are included in [LICENSES](LICENSES/). [SOURCE.md](SOURCE.md) records the exact source revision and APK digest for v0.2.0 and links to dependency sources.
 
-Future builds include a **Settings → Open-source licenses** reader and package the same texts in the APK. The v0.2.0 release already published is unchanged by this repository update. Source/build instructions remain available without payment or a separate request. Keep each later binary release paired with its matching source revision.
+Version 0.2.1 includes a **Settings → Open-source licenses** reader and package the same texts in the APK. The v0.2.0 release already published is unchanged by this repository update. Source/build instructions remain available without payment or a separate request. Keep each later binary release paired with its matching source revision.

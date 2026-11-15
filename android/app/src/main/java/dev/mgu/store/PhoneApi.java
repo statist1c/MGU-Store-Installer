@@ -27,7 +27,15 @@ final class PhoneApi {
         try{
             if(body!=null){c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");try(OutputStream out=c.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}}
             int code=c.getResponseCode();
-            if(code!=200)throw new IOException(code==401?"Phone access token expired. Turn Phone access on again and paste its new link.":code==429?"Too many attempts. Wait one minute before reconnecting.":"Phone access returned HTTP "+code);
+            if(code!=200){
+                if(code==401)throw new IOException("Phone access token expired. Turn Phone access on again and paste its new link.");
+                if(code==429)throw new IOException("Too many attempts. Wait one minute before reconnecting.");
+                String detail="";
+                try(InputStream in=c.getErrorStream()){
+                    if(in!=null){ByteArrayOutputStream error=new ByteArrayOutputStream();byte[] data=new byte[1024];int n;while((n=in.read(data))!=-1&&error.size()<16384)error.write(data,0,Math.min(n,16384-error.size()));detail=new JSONObject(error.toString("UTF-8")).optString("error","");}
+                }catch(Exception ignored){}
+                throw new IOException("Phone access returned HTTP "+code+(detail.isEmpty()?"":": "+detail));
+            }
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1){if(bytes.size()+n>8*1024*1024)throw new IOException("Response too large");bytes.write(b,0,n);}}
             JSONObject reply=new JSONObject(bytes.toString("UTF-8"));if(reply.has("error")&&!reply.isNull("error"))throw new IOException(reply.optString("error"));return reply;
         }finally{c.disconnect();}

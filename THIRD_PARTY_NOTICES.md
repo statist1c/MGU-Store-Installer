@@ -29,7 +29,7 @@ The Python runtime version was resolved from the v0.2.0 build artifact `com.chaq
 
 Gradle and the Android toolchain are build tools, not installed app components. Vehicle-side packages downloaded by the installer are not bundled into this APK and retain their own upstream notices/source distribution. See [SOURCE.md](SOURCE.md) for source locations and release mapping.
 
-Future APK builds package these texts and expose them through **Settings → Open-source licenses**. This GitHub update does not change an already published APK. Existing dependency license metadata is retained alongside the readable notice bundle. The app uses the unmodified distributed Chaquopy/Python runtime; Android runtime adaptations originate in Chaquopy, linked from SOURCE.md.
+Version 0.2.1 APK builds package these texts and expose them through **Settings → Open-source licenses**. This GitHub update does not change an already published APK. Existing dependency license metadata is retained alongside the readable notice bundle. The app uses the unmodified distributed Chaquopy/Python runtime; Android runtime adaptations originate in Chaquopy, linked from SOURCE.md.
 
 ## Artwork and names
 

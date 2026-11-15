@@ -1,3 +1,11 @@
+# Validation — v0.2.1
+
+Date: 15 November 2026. See [UPSTREAM-REVIEW.md](UPSTREAM-REVIEW.md) for the source comparison and regression details.
+
+Android build/lint, 13 Python tests, 10 upstream parity cases, live public-package verification with mocked SSH, complete APK license assets, and Android/Python smoke checks passed. The emulator accepted a same-certificate in-place update from versionCode 2 to 3. Real-car testing remains pending.
+
+## Earlier validation
+
 # Validation — v0.2.0
 
 Date: 15 November 2026. AI implementation: Codex, GPT-6.1. Human review: pending.
