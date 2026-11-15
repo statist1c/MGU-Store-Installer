@@ -28,9 +28,13 @@ jobs:
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Test installer validation
         run: python -m unittest discover -s tests -v
+      - name: Check retained license texts
+        run: python tools/check_legal_notices.py
       - name: Build and lint
         working-directory: android
         run: sh gradlew "-PbuildPythonPath=$(command -v python)" assembleDebug lint
+      - name: Check APK license bundle
+        run: python tools/check_legal_notices.py --apk android/app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
           name: MGU-Store-Installer-preview

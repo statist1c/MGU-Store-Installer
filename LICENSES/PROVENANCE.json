@@ -1,0 +1,92 @@
+[
+  {
+    "file": "Bouncy-Castle-1.87.txt",
+    "source": "org.bouncycastle:bcprov-jdk18on:1.87!/META-INF/LICENSE.md",
+    "sha256": "0e01f1549c9022f406392ac2947d32223b7c2e977d21ea2f8c182fdeb4dae5fd"
+  },
+  {
+    "file": "CPython-3.13.16-THIRD-PARTY.rst",
+    "source": "https://raw.githubusercontent.com/python/cpython/v3.13.16/Doc/license.rst",
+    "sha256": "952ac05720d7f1dcb63589b35eb0931b1442eb250230a4ad31198eddf0ad6abc"
+  },
+  {
+    "file": "CPython-3.13.16.txt",
+    "source": "https://raw.githubusercontent.com/python/cpython/v3.13.16/LICENSE",
+    "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
+  },
+  {
+    "file": "Chaquopy-17.2.0.txt",
+    "source": "https://raw.githubusercontent.com/chaquo/chaquopy/17.2.0/LICENSE.txt",
+    "sha256": "345a9fdfeed355d37b18569ef277ba56eb0ab7c0b17a08a90163ce8d33d2b862"
+  },
+  {
+    "file": "GPL-3.0.txt",
+    "source": "Project LICENSE / upstream mgu-store LICENSE",
+    "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+  },
+  {
+    "file": "Gradle-8.9-NOTICE.txt",
+    "source": "gradle-8.9-bin.zip!/gradle-8.9/NOTICE",
+    "sha256": "c2de5fd9adc7ccc4e1382a0e1f38ec6e14f8ca6e28d3c20289fe80353b019aa1"
+  },
+  {
+    "file": "Gradle-8.9.txt",
+    "source": "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/LICENSE",
+    "sha256": "9536d88ea948603d18e232a13f5958d67807cd80828036b082bff171d2cf0703"
+  },
+  {
+    "file": "JSch-2.28.8.txt",
+    "source": "com.github.mwiede:jsch:2.28.8!/META-INF/LICENSE.txt",
+    "sha256": "9c3537ab0b485b391b887b95fdff761de3dd3273a6931e8a1942dde4d2093cc5"
+  },
+  {
+    "file": "JZlib.txt",
+    "source": "com.github.mwiede:jsch:2.28.8!/META-INF/LICENSE.JZlib.txt",
+    "sha256": "9aa93e9bc58ae423a9e6476f608ee8f46063f5679e3bac0bc55f2f4b10d243ee"
+  },
+  {
+    "file": "OpenSSL-3.5.9.txt",
+    "source": "https://raw.githubusercontent.com/openssl/openssl/openssl-3.5.9/LICENSE.txt",
+    "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a"
+  },
+  {
+    "file": "SQLite-public-domain.txt",
+    "source": "https://raw.githubusercontent.com/sqlite/sqlite/version-3.53.4/src/sqlite.h.in (public-domain dedication at file head)",
+    "sha256": "cc65d76f325d884dd49e319acf3764d5513920f34ad18e34347b8dedc6ddd2ec"
+  },
+  {
+    "file": "XZ-5.4.6.txt",
+    "source": "https://raw.githubusercontent.com/tukaani-project/xz/v5.4.6/COPYING",
+    "sha256": "29a1e305b2e34eefe5d4602d00cde1d528b71c5d9f2eec5106972cf6ddb6f73f"
+  },
+  {
+    "file": "bzip2-1.0.8.txt",
+    "source": "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz!/bzip2-1.0.8/LICENSE",
+    "sha256": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3"
+  },
+  {
+    "file": "jBCrypt.txt",
+    "source": "com.github.mwiede:jsch:2.28.8!/META-INF/LICENSE.jBCrypt.txt",
+    "sha256": "a85927641ed1c8b95a5cef79b127b2392d80e0aa9d8e2d6f3b7b7401c5396af9"
+  },
+  {
+    "file": "libcxx.txt",
+    "source": "https://raw.githubusercontent.com/chaquo/chaquopy/17.2.0/server/pypi/packages/chaquopy-libcxx/LICENSE.TXT",
+    "sha256": "539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b"
+  },
+  {
+    "file": "libffi-3.4.4.txt",
+    "source": "https://raw.githubusercontent.com/libffi/libffi/v3.4.4/LICENSE",
+    "sha256": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388"
+  },
+  {
+    "file": "pyelftools-0.26.txt",
+    "source": "Chaquopy 17.2.0 bootstrap.imy!/java/_vendor/pyelftools-0.26.dist-info/LICENSE.txt",
+    "sha256": "ae18bf4cb82f92af7547259177bc28bc48e4fc732518bcedfe690226288d3445"
+  },
+  {
+    "file": "setuptools-68.2.2.txt",
+    "source": "Chaquopy 17.2.0 bootstrap.imy!/setuptools-68.2.2.dist-info/LICENSE",
+    "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
+  }
+]

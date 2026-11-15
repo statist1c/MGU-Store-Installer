@@ -97,3 +97,9 @@ Differences from the computer installer: public catalog releases only, every art
 ## License and provenance
 
 GPL-3.0-or-later, following upstream. See `LICENSE` and `THIRD_PARTY_NOTICES.md`. This is an independent companion; it is not affiliated with BMW. Native UI work follows the user's previous Root Companion design. No BMW SDK, firmware, vehicle key or signing secret is included.
+
+## Open-source licenses and corresponding source
+
+The application is GPL-3.0-or-later. Preserve the [full license](LICENSE), [upstream attribution](COPYRIGHT.md) and [third-party notices](THIRD_PARTY_NOTICES.md). Complete component license texts are included in [LICENSES](LICENSES/). [SOURCE.md](SOURCE.md) records the exact source revision and APK digest for v0.2.0 and links to dependency sources.
+
+Future builds include a **Settings → Open-source licenses** reader and package the same texts in the APK. The v0.2.0 release already published is unchanged by this repository update. Source/build instructions remain available without payment or a separate request. Keep each later binary release paired with its matching source revision.
